@@ -1,0 +1,72 @@
+{
+  "name": "inferno-css-transition-group",
+  "amdName": "InfernoCSSTransitionGroup",
+  "version": "1.0.0",
+  "description": "css-transition-group UI component for Inferno",
+  "main": "dist/inferno-css-transition-group.js",
+  "minified:main": "dist/inferno-css-transition-group.min.js",
+  "jsnext:main": "dist/inferno-css-transition-group.esm.js",
+  "module": "dist/inferno-css-transition-group.esm.js",
+  "scripts": {
+    "transpile": "rollup -c rollup.config.js",
+    "build": "npm run build:dev && npm run build:prod",
+    "build:dev": "rollup -c rollup.config.js --environment BUILD:development",
+    "build:prod": "rollup -c rollup.config.js --environment BUILD:production",
+    "test": "npm-run-all lint test:karma",
+    "lint": "eslint {src,tests}",
+    "test:karma": "karma start tests/karma.conf.js",
+    "prepublish": "npm-run-all build test"
+  },
+  "keywords": [
+    "inferno",
+    "inferno-component",
+    "inferno-css-transition-group",
+    "css-transition-group"
+  ],
+  "homepage": "https://github.com/JoonasLUT/inferno-css-transition-group",
+  "repository": "JoonasLUT/inferno-css-transition-group",
+  "bugs": {
+    "url": "https://github.com/JoonasLUT/inferno-css-transition-group/issues"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-inferno": "5.0.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "chai": "^4.1.2",
+    "css-loader": "^0.28.11",
+    "eslint": "~4.19.1",
+    "gzip-size-cli": "^2.1.0",
+    "karma": "^2.0.2",
+    "karma-chai": "^0.1.0",
+    "karma-chai-sinon": "^0.1.5",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^3.0.0",
+    "mkdirp": "^0.5.1",
+    "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.3",
+    "pretty-bytes-cli": "^2.0.0",
+    "rollup": "^0.59.3",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-uglify": "^4.0.0",
+    "sinon": "^5.0.10",
+    "sinon-chai": "^3.1.0",
+    "style-loader": "^0.21.0",
+    "uglify-js": "^3.3.27",
+    "webpack": "^4.8.3"
+  },
+  "dependencies": {
+    "inferno": "^5",
+    "inferno-vnode-flags": "^5",
+    "save": "^2.3.2"
+  }
+}
