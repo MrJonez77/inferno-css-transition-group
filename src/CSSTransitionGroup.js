@@ -12,7 +12,7 @@
 
 import {directClone, Component, createVNode, createComponentVNode} from 'inferno';
 import {VNodeFlags, ChildFlags} from 'inferno-vnode-flags';
-import { getKey, filterNullChildren } from './util';
+import {getKey, isInvalid, flattenChildren} from './util';
 import { mergeChildMappings, isShownInChildren, isShownInChildrenByKey, inChildren, inChildrenByKey } from './TransitionChildMapping';
 import { CSSTransitionGroupChild } from './CSSTransitionGroupChild';
 
@@ -20,8 +20,9 @@ export class CSSTransitionGroup extends Component {
 	constructor(props, context) {
 		super(props, context);
 		this.refs = {};
+
 		this.state = {
-			childItems: (props.children || []).slice()
+			childItems: isInvalid(props.children) ? [] : flattenChildren(props.children)
 		};
 	}
 
@@ -36,10 +37,10 @@ export class CSSTransitionGroup extends Component {
 	}
 
 	componentWillReceiveProps({ children, exclusive, showProp }) {
-		let nextChildMapping = filterNullChildren(children || []).slice();
+		let nextChildMapping = flattenChildren(children);
 
 		// last props children if exclusive
-		let prevChildMapping = filterNullChildren(exclusive ? this.props.children : this.state.childItems);
+		let prevChildMapping = flattenChildren(exclusive ? this.props.children : this.state.childItems);
 
 		let newChildren = mergeChildMappings(
 			prevChildMapping,
@@ -113,7 +114,7 @@ export class CSSTransitionGroup extends Component {
 
 	_handleDoneEntering(key) {
 		delete this.currentlyTransitioningKeys[key];
-		let currentChildMapping = filterNullChildren(this.props.children),
+		let currentChildMapping = flattenChildren(this.props.children),
 			showProp = this.props.showProp;
 		if (!currentChildMapping || (
 			!showProp && !inChildrenByKey(currentChildMapping, key)
@@ -152,7 +153,7 @@ export class CSSTransitionGroup extends Component {
 	_handleDoneLeaving(key) {
 		delete this.currentlyTransitioningKeys[key];
 		let showProp = this.props.showProp,
-			currentChildMapping = filterNullChildren(this.props.children);
+			currentChildMapping = flattenChildren(this.props.children);
 		if (showProp && currentChildMapping &&
 			isShownInChildrenByKey(currentChildMapping, key, showProp)) {
 			this.performEnter(key);
@@ -182,15 +183,6 @@ export class CSSTransitionGroup extends Component {
 
 		for (let i = 0, len = childItems.length; i < len; i++) {
 			const child = childItems[i];
-
-			if (child === null || child === undefined || typeof child === 'boolean') {
-				continue;
-			}
-
-			if (Array.isArray(child)) {
-
-			}
-
 			const key = getKey(child);
 
 			childrenToRender.push(

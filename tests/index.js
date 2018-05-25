@@ -349,6 +349,7 @@ describe('CSSTransitionGroup: NullChildren', () => {
 
 	it('transitionLeave works', done => {
 		// this.timeout(5999);
+		debugger;
 		list.toggleDisplay(1);
 
 		// make sure -leave class was added
