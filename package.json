@@ -5,8 +5,8 @@
   "description": "css-transition-group UI component for Inferno",
   "main": "dist/inferno-css-transition-group.js",
   "minified:main": "dist/inferno-css-transition-group.min.js",
-  "jsnext:main": "dist/inferno-css-transition-group.esm.js",
-  "module": "dist/inferno-css-transition-group.esm.js",
+  "jsnext:main": "dist/inferno-css-transition-group.es.js",
+  "module": "dist/inferno-css-transition-group.js",
   "scripts": {
     "transpile": "rollup -c rollup.config.js",
     "build": "npm run build:dev && npm run build:prod",
