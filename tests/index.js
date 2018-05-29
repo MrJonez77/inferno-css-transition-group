@@ -1,58 +1,24 @@
-import { Component, render } from 'inferno';
-import CSSTransitionGroup from './../src';
+import {Component, render} from 'inferno';
+import {CSSTransitionGroup} from './../src/index';
 import './style.css';
 
 /* global describe,expect,it,sinon,assert */
 
 class Todo extends Component {
 	componentWillUnmount() {
-		if (this.props.end) this.props.end();
+		if (this.props.end) {
+			this.props.end();
+		}
 	}
 
-	render({ onClick, children }) {
+	render({onClick, children}) {
 		return <div onClick={onClick} class="item">{children}</div>;
 	}
 }
 
 Todo.defaultProps = {
-	end: ()=>{}
+	end: () => {}
 };
-
-class TodoList extends Component {
-	constructor(props, context) {
-		super(props, context);
-
-		this.state = {
-			items: ['hello', 'world', 'click', 'me']
-		};
-	}
-
-	handleAdd(item) {
-		let { items } = this.state;
-		items = items.concat(item);
-		this.setState({ items });
-	}
-
-	handleRemove(i) {
-		let { items } = this.state;
-		items.splice(i, 1);
-		this.setState({ items });
-	}
-
-	render(_, { items }) {
-		return (
-			<div>
-				<CSSTransitionGroup transitionName="example">
-					{ items.map( (item, i) => (
-						<Todo key={item} onClick={this.handleRemove.bind(this, i)}>
-							{item}
-						</Todo>
-					)) }
-				</CSSTransitionGroup>
-			</div>
-		);
-	}
-}
 
 class TodoListWithTimeout extends Component {
 	constructor(props, context) {
@@ -64,26 +30,31 @@ class TodoListWithTimeout extends Component {
 	}
 
 	handleAdd(item) {
-		let { items } = this.state;
+		let {items} = this.state;
 		items = items.concat(item);
-		this.setState({ items });
+		this.setState({items});
 	}
 
 	handleRemove(i) {
-		let { items } = this.state;
+		let {items} = this.state;
 		items.splice(i, 1);
-		this.setState({ items });
+		this.setState({items});
 	}
 
-	render(_, { items }) {
+	render() {
+		const toDoItems = this.state.items.map((item, i) => (
+			<Todo key={item} onClick={this.handleRemove.bind(this, i)}>
+				{item}
+			</Todo>
+		));
+
 		return (
 			<div>
-				<CSSTransitionGroup transitionName="example" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
-					{ items.map( (item, i) => (
-						<Todo key={item} onClick={this.handleRemove.bind(this, i)}>
-							{item}
-						</Todo>
-					)) }
+				<CSSTransitionGroup
+					transitionName="example"
+					transitionEnterTimeout={1000}
+					transitionLeaveTimeout={1000}>
+					{toDoItems}
 				</CSSTransitionGroup>
 			</div>
 		);
@@ -100,26 +71,32 @@ class SVGList extends Component {
 	}
 
 	handleAdd(item) {
-		let { items } = this.state;
+		let {items} = this.state;
 		items = items.concat(item);
-		this.setState({ items });
+		this.setState({items});
 	}
 
 	handleRemove(i) {
-		let { items } = this.state;
+		let {items} = this.state;
 		items.splice(i, 1);
-		this.setState({ items });
+		this.setState({items});
 	}
 
-	render(_, { items }) {
+	render() {
+		const toDoItems = this.state.items.map((item, i) => (
+			<Todo key={item} onClick={this.handleRemove.bind(this, i)}>
+				{item}
+			</Todo>
+		));
+
 		return (
 			<svg>
-				<CSSTransitionGroup transitionName="example" transitionEnterTimeout={1000} transitionLeaveTimeout={1000} component="g">
-					{ items.map( (item, i) => (
-						<text key={item} className="item">
-							{item}
-						</text>
-					)) }
+				<CSSTransitionGroup
+					transitionName="example"
+					transitionEnterTimeout={1000}
+					transitionLeaveTimeout={1000}
+					component="g">
+					{toDoItems}
 				</CSSTransitionGroup>
 			</svg>
 		);
@@ -132,32 +109,33 @@ class NullChildren extends Component {
 
 		this.state = {
 			items: [
-				{ displayed: true, item: 'hello'},
-				{ displayed: true, item: 'world'},
-				{ displayed: false, item: 'click'},
-				{ displayed: true, item: 'me'}
+				{displayed: true, item: 'hello'},
+				{displayed: true, item: 'world'},
+				{displayed: false, item: 'click'},
+				{displayed: true, item: 'me'}
 			]
 		};
 	}
 
 	toggleDisplay(i) {
-		let { items } = this.state;
+		let {items} = this.state;
 		const item = items[i];
 		item.displayed = !item.displayed;
-		this.setState({ items });
+		this.setState({items});
 	}
 
-	render(_, { items }) {
+	render() {
+		const toDoItems = this.state.items.map( ({displayed, item}, i) => (
+			displayed ? <Todo key={item} onClick={this.toggleDisplay.bind(this, i)}>{item}</Todo> : null
+		));
+
 		return (
 			<div className='root'>
-				<CSSTransitionGroup transitionName="example" transitionEnterTimeout={1000} transitionLeaveTimeout={1000}>
-					{null}
-
-					{ items.map( ({displayed, item}, i) => (
-						displayed ? <Todo key={item} onClick={this.toggleDisplay.bind(this, i)}>
-							{item}
-						</Todo> : null
-					)) }
+				<CSSTransitionGroup
+					transitionName="example"
+					transitionEnterTimeout={1000}
+					transitionLeaveTimeout={1000}>
+					{toDoItems}
 				</CSSTransitionGroup>
 			</div>
 		);
@@ -165,49 +143,6 @@ class NullChildren extends Component {
 }
 
 const Nothing = () => null;
-
-
-describe('CSSTransitionGroup without timeout', () => {
-	let container = document.createElement('div'),
-		list, root;
-	document.body.appendChild(container);
-
-	let $ = s => [].slice.call(container.querySelectorAll(s));
-
-	beforeEach( () => {
-		root = render(<div><Nothing /></div>, container, root);
-		root = render(<div><TodoList ref={c => list=c} /></div>, container, root);
-		sinon.spy(console, 'error');
-	});
-
-	afterEach( () => {
-		list = null;
-		console.error.restore();
-	});
-
-	it('create works', () => {
-		expect($('.item')).to.have.length(4);
-	});
-
-	it('transitionLeave raises console error', done => {
-		list.handleRemove(0);
-		setTimeout( () => {
-			assert(console.error.calledOnce);
-			expect(console.error.getCall(0).args[0]).to.equal('transitionLeaveTimeout should be specified');
-			done();
-		}, 100);
-	});
-
-	it('transitionEnter raises console error', done => {
-		list.handleAdd(Date.now());
-
-		setTimeout( () => {
-			assert(console.error.calledOnce);
-			expect(console.error.getCall(0).args[0]).to.equal('transitionEnterTimeout should be specified');
-			done();
-		}, 100);
-	});
-});
 
 describe('CSSTransitionGroup with timeout', () => {
 	let container = document.createElement('div'),
@@ -217,7 +152,7 @@ describe('CSSTransitionGroup with timeout', () => {
 	let $ = s => [].slice.call(container.querySelectorAll(s));
 
 	beforeEach( () => {
-		root = render(<div><Nothing /></div>, container, root);
+		root = render(<div><Nothing/></div>, container, root);
 		root = render(<div><TodoListWithTimeout ref={c => list=c} /></div>, container, root);
 	});
 

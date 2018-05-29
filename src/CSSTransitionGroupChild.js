@@ -1,51 +1,95 @@
-/**
- * Copyright 2013-2014, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- *	Additional credit to the Author of rc-css-transition-group: https://github.com/yiminghe
- *	File originally extracted from the React source, converted to ES6 by https://github.com/developit
- */
+import {Component, directClone} from 'inferno';
+import addClass from 'dom-helpers/class/addClass';
+import removeClass from 'dom-helpers/class/removeClass';
+import raf from 'dom-helpers/util/requestAnimationFrame';
+import {transitionEnd, animationEnd} from 'dom-helpers/transition/properties';
 
-import { Component } from 'inferno';
-import { requestAnimationFrame } from './util';
-import { addClass, removeClass } from './CSSCore';
-import { addEndEventListener, removeEndEventListener } from './TransitionEvents';
+let events = [];
 
-export class CSSTransitionGroupChild extends Component {
+if (transitionEnd) {
+	events.push(transitionEnd);
+}
+if (animationEnd) {
+	events.push(animationEnd);
+}
+
+function addEndListener(node, listener) {
+	if (events.length) {
+		events.forEach(e =>
+			node.addEventListener(e, listener, false));
+	} else {
+		setTimeout(listener, 0);
+	}
+
+	return () => {
+		if (!events.length) {
+			return;
+		}
+		events.forEach(e => node.removeEventListener(e, listener, false));
+	};
+}
+
+class CSSTransitionGroupChild extends Component {
 	constructor(props, context) {
 		super(props, context);
 
-		this.flushClassNameQueue = this.flushClassNameQueue.bind(this);
+		this.componentWillAppear = this.componentWillAppear.bind(this);
+		this.componentWillEnter = this.componentWillEnter.bind(this);
+		this.componentWillLeave = this.componentWillLeave.bind(this);
+	}
+
+	componentWillMount() {
+		this.classNameAndNodeQueue = [];
+		this.transitionTimeouts = [];
+	}
+
+	componentWillUnmount() {
+		this.unmounted = true;
+
+		if (this.timeout) {
+			clearTimeout(this.timeout);
+		}
+		this.transitionTimeouts.forEach((timeout) => {
+			clearTimeout(timeout);
+		});
+
+		this.classNameAndNodeQueue.length = 0;
+		this.rafHandle = null;
 	}
 
 	transition(animationType, finishCallback, timeout) {
-
-		if (!timeout) {
-			this.raiseTimeoutConsoleError(animationType);
-		}
-
 		let node = this.$LI.dom;
 
-		let className = this.props.name[animationType] || this.props.name + '-' + animationType;
-		let activeClassName = this.props.name[animationType + 'Active'] || className + '-active';
-		let timer = null;
-
-		if (this.endListener) {
-			this.endListener();
+		if (!node) {
+			if (finishCallback) {
+				finishCallback();
+			}
+			return;
 		}
 
-		this.endListener = (e) => {
-			if (e && e.target!==node) return;
+		let className = this.props.name[animationType] || this.props.name + '-' + animationType,
+			activeClassName = this.props.name[animationType + 'Active'] || className + '-active',
+			timer = null,
+			removeListeners;
+
+		addClass(node, className);
+
+		// Need to do this to actually trigger a transition.
+		this.queueClassAndNode(activeClassName, node);
+
+		// Clean-up the animation after the specified delay
+		const finish = (e) => {
+			if (e && e.target !== node) {
+				return;
+			}
 
 			clearTimeout(timer);
+			if (removeListeners) removeListeners();
+
 			removeClass(node, className);
 			removeClass(node, activeClassName);
-			removeEndEventListener(node, this.endListener);
-			this.endListener = null;
+
+			if (removeListeners) removeListeners();
 
 			// Usually this optional callback is used for informing an owner of
 			// a leave animation and telling it to remove the child.
@@ -55,69 +99,51 @@ export class CSSTransitionGroupChild extends Component {
 		};
 
 		if (timeout) {
-			timer = setTimeout(this.endListener, timeout);
+			timer = setTimeout(finish, timeout);
 			this.transitionTimeouts.push(timer);
-		} else {
-			addEndEventListener(node, this.endListener);
+		} else if (transitionEnd) {
+			removeListeners = addEndListener(node, finish);
 		}
-
-		addClass(node, className);
-
-		// Need to do this to actually trigger a transition.
-		this.queueClass(activeClassName);
 	}
 
-	raiseTimeoutConsoleError(type) {
-		const timeoutType = type === 'enter' ?  'transitionEnterTimeout' : 'transitionLeaveTimeout';
-		console.error(`${timeoutType} should be specified`);
-	}
-
-	queueClass(className) {
-		this.classNameQueue.push(className);
+	queueClassAndNode(className, node) {
+		this.classNameAndNodeQueue.push({
+			className,
+			node
+		});
 
 		if (!this.rafHandle) {
-			this.rafHandle = requestAnimationFrame(this.flushClassNameQueue);
+			this.rafHandle = raf(() => this.flushClassNameAndNodeQueue());
 		}
 	}
 
-	stop() {
-		if (this.rafHandle) {
-			this.classNameQueue.length = 0;
-			this.rafHandle = null;
+	flushClassNameAndNodeQueue() {
+		if (!this.unmounted) {
+			this.classNameAndNodeQueue.forEach((obj) => {
+				// This is for to force a repaint,
+				// which is necessary in order to transition styles when adding a class name.
+				/* eslint-disable no-unused-expressions */
+				obj.node.scrollTop;
+				/* eslint-enable no-unused-expressions */
+				addClass(obj.node, obj.className);
+			});
 		}
-		if (this.endListener) {
-			this.endListener();
-		}
-	}
-
-	flushClassNameQueue(){
-		const node = this.$LI.dom;
-
-		if (node) {
-			addClass(node, this.classNameQueue.join(' '));
-		}
-		this.classNameQueue.length = 0;
+		this.classNameAndNodeQueue.length = 0;
 		this.rafHandle = null;
 	}
 
-	componentWillMount() {
-		this.classNameQueue = [];
-		this.transitionTimeouts = [];
-	}
-
-	componentWillUnmount() {
-		this.classNameQueue.length = 0;
-		this.rafHandle = null;
-		this.transitionTimeouts.forEach((timeout) => {
-			clearTimeout(timeout);
-		});
+	componentWillAppear(done) {
+		if (this.props.appear) {
+			this.transition('appear', done, this.props.appearTimeout);
+		} else {
+			done();
+		}
 	}
 
 	componentWillEnter(done) {
 		if (this.props.enter) {
 			this.transition('enter', done, this.props.enterTimeout);
-		}
-		else {
+		} else {
 			done();
 		}
 	}
@@ -125,13 +151,21 @@ export class CSSTransitionGroupChild extends Component {
 	componentWillLeave(done) {
 		if (this.props.leave) {
 			this.transition('leave', done, this.props.leaveTimeout);
-		}
-		else {
+		} else {
 			done();
 		}
 	}
 
-	render(props) {
-		return Array.isArray(props.children) ? props.children[0] : props.children;
+	render({name, appear, enter, leave, appearTimeout, enterTimeout, leaveTimeout, children, ...props}) {
+		const child = Array.isArray(children) ? children[0] : children;
+		const clonedChild = directClone(child);
+
+		if (clonedChild.props) {
+			Object.assign(clonedChild.props, props);
+		}
+
+		return clonedChild;
 	}
 }
+
+export default CSSTransitionGroupChild;
