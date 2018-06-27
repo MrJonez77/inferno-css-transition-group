@@ -1,4 +1,4 @@
-import {getChildMapping, mergeChildMappings, chain} from "./util";
+import {getChildMapping, mergeChildMappings} from "./util";
 import {Component, createComponentVNode, createVNode, directClone} from "inferno";
 import {ChildFlags, VNodeFlags} from "inferno-vnode-flags";
 
@@ -12,19 +12,17 @@ export class TransitionGroup extends Component {
 			mappedChildren: getChildMapping(props.children)
 		};
 
+		this.currentlyTransitioningKeys = {};
+		this.keysToEnter = [];
+		this.keysToLeave = [];
+
 		// Bindings
-		this.performAppear =  this.performAppear.bind(this);
+		this.performAppear = this.performAppear.bind(this);
 		this._handleDoneAppearing = this._handleDoneAppearing.bind(this);
 		this.performEnter = this.performEnter.bind(this);
 		this._handleDoneEntering = this._handleDoneEntering.bind(this);
 		this.performLeave = this.performLeave.bind(this);
 		this._handleDoneLeaving = this._handleDoneLeaving.bind(this);
-	}
-
-	componentWillMount() {
-		this.currentlyTransitioningKeys = {};
-		this.keysToEnter = [];
-		this.keysToLeave = [];
 	}
 
 	componentDidMount() {
@@ -63,20 +61,30 @@ export class TransitionGroup extends Component {
 				this.keysToLeave.push(key);
 			}
 		}
-
-		// If we want to someday check for reordering, we could do it here.
 	}
 
 	componentDidUpdate() {
-		let keysToEnter = this.keysToEnter;
+		const keysToEnter = this.keysToEnter;
+		const keysToEnterLength = keysToEnter.length;
+		let i,
+			key;
+
+		for (i = 0; i < keysToEnterLength; i++) {
+			key = keysToEnter[i];
+			this.performEnter(key, this.childRefs[key]);
+		}
 
 		this.keysToEnter = [];
-		keysToEnter.forEach(key => this.performEnter(key, this.childRefs[key]));
 
-		let keysToLeave = this.keysToLeave;
+		const keysToLeave = this.keysToLeave;
+		const keysToLeaveLength = keysToLeave.length;
+
+		for (i = 0; i < keysToLeaveLength; i++) {
+			key = keysToLeave[i];
+			this.performLeave(key, this.childRefs[key]);
+		}
 
 		this.keysToLeave = [];
-		keysToLeave.forEach(key => this.performLeave(key, this.childRefs[key]));
 	}
 
 	performAppear(key, component) {
@@ -94,7 +102,7 @@ export class TransitionGroup extends Component {
 			component.componentDidAppear();
 		}
 
-		delete this.currentlyTransitioningKeys[key];
+		this.currentlyTransitioningKeys[key] = false;
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
@@ -119,7 +127,7 @@ export class TransitionGroup extends Component {
 			component.componentDidEnter();
 		}
 
-		delete this.currentlyTransitioningKeys[key];
+		this.currentlyTransitioningKeys[key] = false;
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
@@ -147,13 +155,13 @@ export class TransitionGroup extends Component {
 			component.componentDidLeave();
 		}
 
-		delete this.currentlyTransitioningKeys[key];
+		this.currentlyTransitioningKeys[key] = false;
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
 		if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
 			// This entered again before it fully left. Add it again.
-			this.keysToEnter.push(key);
+			this.performEnter(key, this.childRefs[key]);
 		} else {
 			this.setState((state) => {
 				let newChildren = Object.assign({}, state.mappedChildren);
@@ -174,33 +182,20 @@ export class TransitionGroup extends Component {
 			let child = mappedChildren[key];
 
 			if (child) {
-				let isCallbackRef = typeof child.ref !== 'string',
-					factoryChild = childFactory(child),
-					ref = (r) => {
-						this.childRefs[key] = r;
-					};
-
-				if (!isCallbackRef) {
-					console.warn(
-						'string refs are not supported on children of TransitionGroup and will be ignored. ' +
-						'Please use a callback ref instead: https://facebook.github.io/react/docs/refs-and-the-dom.html#the-ref-callback-attribute'
-					);
-				}
-
-				// Always chaining the refs leads to problems when the childFactory
-				// wraps the child. The child ref callback gets called twice with the
-				// wrapper and the child. So we only need to chain the ref if the
-				// factoryChild is not different from child.
-				if (factoryChild === child && isCallbackRef) {
-					ref = chain(child.ref, ref);
-				}
-
 				// You may need to apply reactive updates to a child as it is leaving.
 				// The normal React way to do it won't work since the child will have
 				// already been removed. In case you need this behavior you can provide
 				// a childFactory function to wrap every child, even the ones that are
 				// leaving.
-				childrenToRender.push(Object.assign(directClone(factoryChild), {ref, key}));
+				childrenToRender.push(Object.assign(
+					directClone(childFactory(child)),
+					{
+						ref: (r) => {
+							this.childRefs[key] = r;
+						},
+						key
+					}
+				));
 			}
 		}
 

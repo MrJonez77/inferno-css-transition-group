@@ -3,20 +3,33 @@ import fs from 'fs';
 import babel from 'rollup-plugin-babel';
 import {uglify} from 'rollup-plugin-uglify';
 
-let pkg = JSON.parse(fs.readFileSync('./package.json'));
-let external = Object.keys(pkg.dependencies || {});
+let external = {
+	inferno: 'Inferno',
+	'inferno-vnode-flags': 'Inferno'
+};
 
 const outputs = [];
 const plugins = [
 	babel({
 		exclude: 'node_modules/**',
 		babelrc: false,
-		presets: [['es2015', {modules: false, loose: true}]],
 		plugins: [
 			['babel-plugin-inferno', {imports: true}],
+			['babel-plugin-transform-es2015-template-literals', { loose: true }],
+			'babel-plugin-transform-es2015-sticky-regex',
 			['babel-plugin-transform-es2015-spread', { loose: true }],
-			['transform-es2015-classes', { loose: true }],
-			['babel-plugin-transform-object-rest-spread', { useBuiltIns: true }]
+			'babel-plugin-transform-es2015-shorthand-properties',
+			'babel-plugin-transform-es2015-parameters',
+			'babel-plugin-transform-es2015-object-super',
+			'babel-plugin-transform-es2015-constants',
+			'babel-plugin-transform-es2015-block-scoping',
+			'babel-plugin-transform-es2015-block-scoped-functions',
+			['babel-plugin-transform-es2015-destructuring', { loose: true }],
+			['babel-plugin-transform-es2015-computed-properties', { loose: true }],
+			'babel-plugin-transform-es2015-arrow-functions',
+			['babel-plugin-transform-es2015-classes', { loose: true }],
+			['babel-plugin-transform-object-rest-spread', { useBuiltIns: true }],
+			'babel-plugin-external-helpers'
 		]
 	})
 ];
@@ -27,7 +40,7 @@ if (process.env.BUILD === 'production') {
 		format: 'umd',
 		file: path.join(__dirname, 'dist', 'inferno-css-transition-group.min.js'),
 		sourcemap: true,
-		global: external
+		globals: external
 	});
 
 	plugins.push(
@@ -60,26 +73,26 @@ if (process.env.BUILD === 'production') {
 		format: 'umd',
 		file: path.join(__dirname, 'dist', 'inferno-css-transition-group.js'),
 		sourcemap: false,
-		global: external
+		globals: external
 	});
 	outputs.push({
 		name: 'InfernoTransitionGroup',
 		format: 'cjs',
 		file: path.join(__dirname, 'dist', 'inferno-css-transition-group.cjs.js'),
 		sourcemap: false,
-		global: external
+		globals: external
 	});
 	outputs.push({
 		name: 'InfernoTransitionGroup',
 		format: 'es',
 		file: path.join(__dirname, 'dist', 'inferno-css-transition-group.es.js'),
 		sourcemap: false,
-		global: external
+		globals: external
 	});
 }
 
 export default {
 	input: path.join(__dirname, 'src/index.js'),
 	output: outputs,
-	plugins: plugins
+	plugins
 };

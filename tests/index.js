@@ -1,3 +1,4 @@
+import './polyfill';
 import {Component, render} from 'inferno';
 import {CSSTransitionGroup} from './../src/index';
 import './style.css';
