@@ -1,63 +1,27 @@
-import {Component, directClone} from 'inferno';
-import addClass from 'dom-helpers/class/addClass';
-import removeClass from 'dom-helpers/class/removeClass';
-import raf from 'dom-helpers/util/requestAnimationFrame';
-import {transitionEnd, animationEnd} from 'dom-helpers/transition/properties';
-
-let events = [];
-
-if (transitionEnd) {
-	events.push(transitionEnd);
-}
-if (animationEnd) {
-	events.push(animationEnd);
-}
-
-function addEndListener(node, listener) {
-	if (events.length) {
-		events.forEach(e =>
-			node.addEventListener(e, listener, false));
-	} else {
-		setTimeout(listener, 0);
-	}
-
-	return () => {
-		if (!events.length) {
-			return;
-		}
-		events.forEach(e => node.removeEventListener(e, listener, false));
-	};
-}
+import {Component} from 'inferno';
 
 class CSSTransitionGroupChild extends Component {
 	constructor(props, context) {
 		super(props, context);
 
+		this.classNameAndNodeQueue = [];
+		this.transitionTimeouts = [];
+
+		this.flushClassNameAndNodeQueue = this.flushClassNameAndNodeQueue.bind(this);
 		this.componentWillAppear = this.componentWillAppear.bind(this);
 		this.componentWillEnter = this.componentWillEnter.bind(this);
 		this.componentWillLeave = this.componentWillLeave.bind(this);
 	}
 
-	componentWillMount() {
-		this.classNameAndNodeQueue = [];
-		this.transitionTimeouts = [];
-	}
-
 	componentWillUnmount() {
-		this.unmounted = true;
-
-		if (this.timeout) {
-			clearTimeout(this.timeout);
-		}
 		this.transitionTimeouts.forEach((timeout) => {
 			clearTimeout(timeout);
 		});
 
 		this.classNameAndNodeQueue.length = 0;
-		this.rafHandle = null;
 	}
 
-	transition(animationType, finishCallback, timeout) {
+	transition(animationType, finishCallback, userSpecifiedDelay) {
 		let node = this.$LI.dom;
 
 		if (!node) {
@@ -72,7 +36,7 @@ class CSSTransitionGroupChild extends Component {
 			timer = null,
 			removeListeners;
 
-		addClass(node, className);
+		node.classList.add(className);
 
 		// Need to do this to actually trigger a transition.
 		this.queueClassAndNode(activeClassName, node);
@@ -86,8 +50,8 @@ class CSSTransitionGroupChild extends Component {
 			clearTimeout(timer);
 			if (removeListeners) removeListeners();
 
-			removeClass(node, className);
-			removeClass(node, activeClassName);
+			node.classList.remove(className);
+			node.classList.remove(activeClassName);
 
 			if (removeListeners) removeListeners();
 
@@ -98,11 +62,9 @@ class CSSTransitionGroupChild extends Component {
 			}
 		};
 
-		if (timeout) {
-			timer = setTimeout(finish, timeout);
+		if (userSpecifiedDelay) {
+			timer = setTimeout(finish, userSpecifiedDelay);
 			this.transitionTimeouts.push(timer);
-		} else if (transitionEnd) {
-			removeListeners = addEndListener(node, finish);
 		}
 	}
 
@@ -113,22 +75,22 @@ class CSSTransitionGroupChild extends Component {
 		});
 
 		if (!this.rafHandle) {
-			this.rafHandle = raf(() => this.flushClassNameAndNodeQueue());
+			this.rafHandle = requestAnimationFrame(() => this.flushClassNameAndNodeQueue());
 		}
 	}
 
 	flushClassNameAndNodeQueue() {
-		if (!this.unmounted) {
-			this.classNameAndNodeQueue.forEach((obj) => {
-				// This is for to force a repaint,
-				// which is necessary in order to transition styles when adding a class name.
-				/* eslint-disable no-unused-expressions */
-				obj.node.scrollTop;
-				/* eslint-enable no-unused-expressions */
-				addClass(obj.node, obj.className);
-			});
+		const classNameAndNodeQueue = this.classNameAndNodeQueue;
+
+		if (!this.$UN) {
+			for (let i = 0, len = classNameAndNodeQueue.length; i < len; i++) {
+				const obj = classNameAndNodeQueue[i];
+
+				obj.node.offsetHeight; // Force re-flow
+				obj.node.classList.add(obj.className);
+			}
 		}
-		this.classNameAndNodeQueue.length = 0;
+		classNameAndNodeQueue.length = 0;
 		this.rafHandle = null;
 	}
 
@@ -156,15 +118,8 @@ class CSSTransitionGroupChild extends Component {
 		}
 	}
 
-	render({name, appear, enter, leave, appearTimeout, enterTimeout, leaveTimeout, children, ...props}) {
-		const child = Array.isArray(children) ? children[0] : children;
-		const clonedChild = directClone(child);
-
-		if (clonedChild.props) {
-			Object.assign(clonedChild.props, props);
-		}
-
-		return clonedChild;
+	render(props) {
+		return props.children;
 	}
 }
 

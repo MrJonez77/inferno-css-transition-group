@@ -1,5 +1,4 @@
 /* eslint-env node */
-const path = require('path');
 
 module.exports = function(config) {
 	config.set({
@@ -12,10 +11,6 @@ module.exports = function(config) {
 
 		files: [
 			'tests/**/*.js'
-		],
-
-		exclude: [
-			'tests/preact-versions/**/*.js'
 		],
 
 		preprocessors: {
@@ -38,14 +33,25 @@ module.exports = function(config) {
 						exclude: /node_modules/,
 						loader: 'babel-loader',
 						query: {
+							babelrc: false,
 							sourceMap: false,
-							presets: [['es2015', {modules: false, loose: true}]],
-							plugins: [
-								['babel-plugin-inferno', {imports: true}],
-								['babel-plugin-transform-es2015-spread', { loose: true }],
-								['transform-es2015-classes', { loose: true }],
-								['babel-plugin-transform-object-rest-spread', { useBuiltIns: true }]
-							]
+                            plugins: [
+                                ['babel-plugin-inferno', {imports: true}],
+                                ['babel-plugin-transform-es2015-template-literals', { loose: true }],
+                                'babel-plugin-transform-es2015-sticky-regex',
+                                ['babel-plugin-transform-es2015-spread', { loose: true }],
+                                'babel-plugin-transform-es2015-shorthand-properties',
+                                'babel-plugin-transform-es2015-parameters',
+                                'babel-plugin-transform-es2015-object-super',
+                                'babel-plugin-transform-es2015-constants',
+                                'babel-plugin-transform-es2015-block-scoping',
+                                'babel-plugin-transform-es2015-block-scoped-functions',
+                                ['babel-plugin-transform-es2015-destructuring', { loose: true }],
+                                ['babel-plugin-transform-es2015-computed-properties', { loose: true }],
+                                'babel-plugin-transform-es2015-arrow-functions',
+                                ['babel-plugin-transform-es2015-classes', { loose: true }],
+                                ['babel-plugin-transform-object-rest-spread', { useBuiltIns: true }]
+                            ]
 						}
 					},
 					{
