@@ -161,7 +161,6 @@ export class TransitionGroup extends Component {
 
 		if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
 			// This entered again before it fully left. Add it again.
-			// this.keysToEnter.push(key);
 			this.performEnter(key, this.childRefs[key]);
 		} else {
 			this.setState((state) => {
