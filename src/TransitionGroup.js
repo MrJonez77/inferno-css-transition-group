@@ -69,22 +69,22 @@ export class TransitionGroup extends Component {
 		let i,
 			key;
 
+		this.keysToEnter = [];
+
 		for (i = 0; i < keysToEnterLength; i++) {
 			key = keysToEnter[i];
 			this.performEnter(key, this.childRefs[key]);
 		}
 
-		this.keysToEnter = [];
-
 		const keysToLeave = this.keysToLeave;
 		const keysToLeaveLength = keysToLeave.length;
+
+		this.keysToLeave = [];
 
 		for (i = 0; i < keysToLeaveLength; i++) {
 			key = keysToLeave[i];
 			this.performLeave(key, this.childRefs[key]);
 		}
-
-		this.keysToLeave = [];
 	}
 
 	performAppear(key, component) {
@@ -161,6 +161,7 @@ export class TransitionGroup extends Component {
 
 		if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
 			// This entered again before it fully left. Add it again.
+			// this.keysToEnter.push(key);
 			this.performEnter(key, this.childRefs[key]);
 		} else {
 			this.setState((state) => {

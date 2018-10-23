@@ -5,7 +5,8 @@ import {uglify} from 'rollup-plugin-uglify';
 
 let external = {
 	inferno: 'Inferno',
-	'inferno-vnode-flags': 'Inferno'
+	'inferno-vnode-flags': 'Inferno',
+	'inferno-extras': 'Inferno'
 };
 
 const outputs = [];

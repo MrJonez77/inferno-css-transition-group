@@ -147,14 +147,14 @@ const Nothing = () => null;
 
 describe('CSSTransitionGroup with timeout', () => {
 	let container = document.createElement('div'),
-		list, root;
+		list;
 	document.body.appendChild(container);
 
 	let $ = s => [].slice.call(container.querySelectorAll(s));
 
 	beforeEach( () => {
-		root = render(<div><Nothing/></div>, container, root);
-		root = render(<div><TodoListWithTimeout ref={c => list=c} /></div>, container, root);
+		render(<div><Nothing/></div>, container);
+		render(<div><TodoListWithTimeout ref={c => {if (c) {list = c;}}} /></div>, container);
 	});
 
 	afterEach( () => {
@@ -208,14 +208,14 @@ describe('CSSTransitionGroup with timeout', () => {
 
 describe('CSSTransitionGroup: SVG', () => {
 	let container = document.createElement('div'),
-		list, root;
+		list;
 	document.body.appendChild(container);
 
 	let $ = s => [].slice.call(container.querySelectorAll(s));
 
 	beforeEach( () => {
-		root = render(<div><Nothing /></div>, container, root);
-		root = render(<div><SVGList ref={c => list=c} /></div>, container, root);
+		render(<div><Nothing /></div>, container);
+		render(<div><SVGList ref={c => {if (c) {list = c;}}} /></div>, container);
 	});
 
 	afterEach( () => {
@@ -265,14 +265,14 @@ describe('CSSTransitionGroup: SVG', () => {
 
 describe('CSSTransitionGroup: NullChildren', () => {
 	let container = document.createElement('div'),
-		list, root;
+		list;
 	document.body.appendChild(container);
 
 	let $ = s => [].slice.call(container.querySelectorAll(s));
 
 	beforeEach( () => {
-		root = render(<div><Nothing /></div>, container, root);
-		root = render(<div><NullChildren ref={c => list=c} /></div>, container, root);
+		render(<div><Nothing /></div>, container);
+		render(<div><NullChildren ref={c => {if (c) {list = c;}}} /></div>, container);
 	});
 
 	afterEach( () => {

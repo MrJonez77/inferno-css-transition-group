@@ -49,7 +49,7 @@
     "@babel/plugin-transform-spread": "7.0.0",
     "@babel/plugin-transform-sticky-regex": "7.0.0",
     "@babel/plugin-transform-template-literals": "7.0.0",
-    "chai": "^4.2.0",
+    "chai": "^4.1.2",
     "css-loader": "^1.0.0",
     "eslint": "~5.7.0",
     "gzip-size-cli": "^3.0.0",
@@ -69,14 +69,15 @@
     "rollup": "^0.66.6",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-uglify": "^6.0.0",
-    "sinon": "^7.0.0",
+    "sinon": "^6.0.1",
     "sinon-chai": "^3.2.0",
     "style-loader": "^0.23.1",
     "uglify-js": "^3.4.9",
     "webpack": "^4.22.0"
   },
   "dependencies": {
-    "inferno": "^5",
-    "inferno-vnode-flags": "^5"
+    "inferno": "^6",
+    "inferno-extras": "^6",
+    "inferno-vnode-flags": "^6"
   }
 }

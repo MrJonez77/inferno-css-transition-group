@@ -5,7 +5,7 @@ module.exports = function(config) {
 		basePath: '..',
 		frameworks: ['mocha', 'chai-sinon'],
 		reporters: ['mocha'],
-		singleRun: false,
+		singleRun: true,
 
 		browsers: [process.env.KARMA_BROWSERS || 'Chrome'],
 
