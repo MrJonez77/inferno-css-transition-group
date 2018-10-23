@@ -15,21 +15,21 @@ const plugins = [
 		babelrc: false,
 		plugins: [
 			['babel-plugin-inferno', {imports: true}],
-			['babel-plugin-transform-es2015-template-literals', { loose: true }],
-			'babel-plugin-transform-es2015-sticky-regex',
-			['babel-plugin-transform-es2015-spread', { loose: true }],
-			'babel-plugin-transform-es2015-shorthand-properties',
-			'babel-plugin-transform-es2015-parameters',
-			'babel-plugin-transform-es2015-object-super',
-			'babel-plugin-transform-es2015-constants',
-			'babel-plugin-transform-es2015-block-scoping',
-			'babel-plugin-transform-es2015-block-scoped-functions',
-			['babel-plugin-transform-es2015-destructuring', { loose: true }],
-			['babel-plugin-transform-es2015-computed-properties', { loose: true }],
-			'babel-plugin-transform-es2015-arrow-functions',
-			['babel-plugin-transform-es2015-classes', { loose: true }],
-			['babel-plugin-transform-object-rest-spread', { useBuiltIns: true }],
-			'babel-plugin-external-helpers'
+			['@babel/plugin-transform-template-literals', { loose: true }],
+			'@babel/plugin-transform-sticky-regex',
+			['@babel/plugin-transform-spread', { loose: true }],
+			'@babel/plugin-transform-shorthand-properties',
+			'@babel/plugin-transform-parameters',
+			'@babel/plugin-transform-object-super',
+			'@babel/plugin-transform-react-constant-elements',
+			'@babel/plugin-transform-block-scoping',
+			'@babel/plugin-transform-block-scoped-functions',
+			['@babel/plugin-transform-destructuring', { loose: true }],
+			['@babel/plugin-transform-computed-properties', { loose: true }],
+			'@babel/plugin-transform-arrow-functions',
+			['@babel/plugin-transform-classes', { loose: true }],
+			['@babel/plugin-proposal-object-rest-spread', { useBuiltIns: true }],
+			'@babel/plugin-external-helpers'
 		]
 	})
 ];
