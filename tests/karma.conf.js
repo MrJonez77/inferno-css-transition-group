@@ -44,7 +44,7 @@ module.exports = function(config) {
                                 '@babel/plugin-transform-parameters',
                                 '@babel/plugin-transform-object-super',
                                 '@babel/plugin-transform-react-constant-elements',
-                                '@babel/plugin-transform-block-scoping',
+								['@babel/plugin-transform-block-scoping', { throwIfClosureRequired: true }],
                                 '@babel/plugin-transform-block-scoped-functions',
                                 ['@babel/plugin-transform-destructuring', { loose: true }],
                                 ['@babel/plugin-transform-computed-properties', { loose: true }],
