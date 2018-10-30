@@ -1,5 +1,5 @@
-import {getChildMapping, mergeChildMappings} from "./util";
-import {Component, createComponentVNode, createVNode, directClone} from "inferno";
+import {getChildMapping, mergeChildMappings, isUndefined} from "./util";
+import {Component, createComponentVNode, createVNode, directClone, createRef} from "inferno";
 import {ChildFlags, VNodeFlags} from "inferno-vnode-flags";
 
 export class TransitionGroup extends Component {
@@ -30,7 +30,7 @@ export class TransitionGroup extends Component {
 
 		for (let key in initialChildMapping) {
 			if (initialChildMapping[key]) {
-				this.performAppear(key, this.childRefs[key]);
+				this.performAppear(key, this.childRefs[key].current);
 			}
 		}
 	}
@@ -47,7 +47,7 @@ export class TransitionGroup extends Component {
 		});
 
 		for (let key in nextChildMapping) {
-			let hasPrev = prevChildMapping && prevChildMapping.hasOwnProperty(key);
+			const hasPrev = prevChildMapping && !isUndefined(prevChildMapping[key]);
 
 			if (nextChildMapping[key] && !hasPrev && !this.currentlyTransitioningKeys[key]) {
 				this.keysToEnter.push(key);
@@ -55,7 +55,7 @@ export class TransitionGroup extends Component {
 		}
 
 		for (let key in prevChildMapping) {
-			let hasNext = nextChildMapping && nextChildMapping.hasOwnProperty(key);
+			const hasNext = nextChildMapping && !isUndefined(nextChildMapping[key]);
 
 			if (prevChildMapping[key] && !hasNext && !this.currentlyTransitioningKeys[key]) {
 				this.keysToLeave.push(key);
@@ -69,22 +69,22 @@ export class TransitionGroup extends Component {
 		let i,
 			key;
 
+		this.keysToEnter = [];
+
 		for (i = 0; i < keysToEnterLength; i++) {
 			key = keysToEnter[i];
-			this.performEnter(key, this.childRefs[key]);
+			this.performEnter(key, this.childRefs[key].current);
 		}
-
-		this.keysToEnter = [];
 
 		const keysToLeave = this.keysToLeave;
 		const keysToLeaveLength = keysToLeave.length;
 
+		this.keysToLeave = [];
+
 		for (i = 0; i < keysToLeaveLength; i++) {
 			key = keysToLeave[i];
-			this.performLeave(key, this.childRefs[key]);
+			this.performLeave(key, this.childRefs[key].current);
 		}
-
-		this.keysToLeave = [];
 	}
 
 	performAppear(key, component) {
@@ -161,12 +161,12 @@ export class TransitionGroup extends Component {
 
 		if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
 			// This entered again before it fully left. Add it again.
-			this.performEnter(key, this.childRefs[key]);
+			this.performEnter(key, this.childRefs[key].current);
 		} else {
 			this.setState((state) => {
-				let newChildren = Object.assign({}, state.mappedChildren);
+				const newChildren = Object.assign({}, state.mappedChildren);
 
-				delete newChildren[key];
+				newChildren[key] = undefined;
 
 				return {mappedChildren: newChildren};
 			});
@@ -176,10 +176,11 @@ export class TransitionGroup extends Component {
 	render({component, transitionName, transitionAppear, transitionEnter, transitionLeave, transitionAppearTimeout, transitionEnterTimeout, transitionLeaveTimeout, children, childFactory, ...props}, {mappedChildren}) {
 		// We could get rid of the need for the wrapper node
 		// by cloning a single child
-		let childrenToRender = [];
+		const childrenToRender = [];
+		this.childRefs = {};
 
 		for (let key in mappedChildren) {
-			let child = mappedChildren[key];
+			const child = mappedChildren[key];
 
 			if (child) {
 				// You may need to apply reactive updates to a child as it is leaving.
@@ -187,15 +188,9 @@ export class TransitionGroup extends Component {
 				// already been removed. In case you need this behavior you can provide
 				// a childFactory function to wrap every child, even the ones that are
 				// leaving.
-				childrenToRender.push(Object.assign(
-					directClone(childFactory(child)),
-					{
-						ref: (r) => {
-							this.childRefs[key] = r;
-						},
-						key
-					}
-				));
+				const ref = createRef();
+				this.childRefs[key] = ref;
+				childrenToRender.push(Object.assign(directClone(childFactory(child)), {ref, key}));
 			}
 		}
 

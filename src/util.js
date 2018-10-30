@@ -17,6 +17,10 @@ export function getChildMapping(children) {
 	return result;
 }
 
+export function isUndefined(obj) {
+	return obj === void 0;
+}
+
 export function mergeChildMappings(prev, next) {
 	prev = prev || {};
 	next = next || {};
@@ -28,7 +32,10 @@ export function mergeChildMappings(prev, next) {
 		key;
 
 	for (key in prev) {
-		if (next.hasOwnProperty(key)) {
+		if (isUndefined(prev[key])) {
+			continue;
+		}
+		if (!isUndefined(next[key])) {
 			if (pendingKeys.length) {
 				nextKeysPending[key] = pendingKeys;
 				pendingKeys = [];
@@ -41,7 +48,10 @@ export function mergeChildMappings(prev, next) {
 	let childMapping = {}, i;
 
 	for (key in next) {
-		if (nextKeysPending.hasOwnProperty(key)) {
+		if (isUndefined(next[key])) {
+			continue;
+		}
+		if (!isUndefined(nextKeysPending[key])) {
 			for (i = 0; i < nextKeysPending[key].length; i++) {
 				let pendingNextKey = nextKeysPending[key][i];
 				childMapping[nextKeysPending[key][i]] = next[pendingNextKey] || prev[pendingNextKey];

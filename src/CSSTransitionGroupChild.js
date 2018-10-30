@@ -1,4 +1,5 @@
 import {Component} from 'inferno';
+import {findDOMNode} from 'inferno-extras';
 
 class CSSTransitionGroupChild extends Component {
 	constructor(props, context) {
@@ -22,7 +23,7 @@ class CSSTransitionGroupChild extends Component {
 	}
 
 	transition(animationType, finishCallback, userSpecifiedDelay) {
-		let node = this.$LI.dom;
+		let node = findDOMNode(this);
 
 		if (!node) {
 			if (finishCallback) {
