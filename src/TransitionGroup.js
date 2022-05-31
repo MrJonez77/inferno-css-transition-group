@@ -1,4 +1,4 @@
-import {getChildMapping, mergeChildMappings, isUndefined} from "./util";
+import {getChildMapping, mergeChildMappings, isUndefined, hasOwn} from "./util";
 import {Component, createComponentVNode, createVNode, directClone, createRef} from "inferno";
 import {ChildFlags, VNodeFlags} from "inferno-vnode-flags";
 
@@ -106,7 +106,7 @@ export class TransitionGroup extends Component {
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
-		if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
+		if (!currentChildMapping || !hasOwn(currentChildMapping, key)) {
 			// This was removed before it had fully appeared. Remove it.
 			this.performLeave(key, component);
 		}
@@ -131,7 +131,7 @@ export class TransitionGroup extends Component {
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
-		if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
+		if (!currentChildMapping || hasOwn(currentChildMapping, key)) {
 			// This was removed before it had fully entered. Remove it.
 			this.performLeave(key, component);
 		}
@@ -159,7 +159,7 @@ export class TransitionGroup extends Component {
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
-		if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
+		if (currentChildMapping && hasOwn(currentChildMapping, key)) {
 			// This entered again before it fully left. Add it again.
 			this.performEnter(key, this.childRefs[key].current);
 		} else {
@@ -198,10 +198,9 @@ export class TransitionGroup extends Component {
 			return createVNode(VNodeFlags.HtmlElement, component, props ? props.className : null, childrenToRender, ChildFlags.UnknownChildren, props);
 		}
 
-		return createComponentVNode(VNodeFlags.ComponentUnknown, component, {
-			children: childrenToRender,
-			...props
-		});
+		return createComponentVNode(VNodeFlags.ComponentUnknown, component, Object.assign({}, props, {
+			children: childrenToRender
+		}));
 	}
 }
 

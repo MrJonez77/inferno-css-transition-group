@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import babel from 'rollup-plugin-babel';
 import {uglify} from 'rollup-plugin-uglify';
 
@@ -29,8 +28,7 @@ const plugins = [
 			['@babel/plugin-transform-computed-properties', { loose: true }],
 			'@babel/plugin-transform-arrow-functions',
 			['@babel/plugin-transform-classes', { loose: true }],
-			['@babel/plugin-proposal-object-rest-spread', { useBuiltIns: true }],
-			'@babel/plugin-external-helpers'
+			['@babel/plugin-proposal-object-rest-spread', { useBuiltIns: true }]
 		]
 	})
 ];
