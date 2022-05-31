@@ -131,7 +131,7 @@ export class TransitionGroup extends Component {
 
 		let currentChildMapping = getChildMapping(this.props.children);
 
-		if (!currentChildMapping || hasOwn(currentChildMapping, key)) {
+		if (!currentChildMapping || !hasOwn(currentChildMapping, key)) {
 			// This was removed before it had fully entered. Remove it.
 			this.performLeave(key, component);
 		}
