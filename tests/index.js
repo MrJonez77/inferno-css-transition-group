@@ -3,7 +3,7 @@ import {Component, render} from 'inferno';
 import {CSSTransitionGroup} from './../src/index';
 import './style.css';
 
-/* global describe,expect,it,sinon,assert */
+/* global expect */
 
 class Todo extends Component {
 	componentWillUnmount() {

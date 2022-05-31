@@ -68,3 +68,7 @@ export function mergeChildMappings(prev, next) {
 
 	return childMapping;
 }
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+// Note: Object.hasOwn() is recommended over hasOwnProperty(), in browsers where it is supported.
+export const hasOwn = Object.hasOwn || ((o, key) => Object.prototype.hasOwnProperty.call(o, key));

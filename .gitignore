@@ -2,5 +2,4 @@ dist
 node_modules
 npm-debug.log
 .idea
-package-lock.json
 *.orig
